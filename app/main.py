@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from typing import List
 from cassandra.cqlengine.management import sync_table
 from . import (
+    crud,
     db,
     config,
     models,
@@ -28,16 +29,27 @@ def on_startup():
 def read_index():
     return {"hello": "world"}
 
+# The response_model parameter in this case act as a representation of a Pydantic's model
 @app.get("/products", response_model=List[schema.ProductListSchema])
 def products_list_view():
     return list(Product.objects.all())
+
+
+@app.post("/events/scrape")
+def events_scrape_create_view(data: schema.ProductListSchema):
+    product, _ = crud.add_scrape_event(data.dict())
+    return product
+
 
 @app.get("/products/{asin}")
 def products_detail_view(asin):
     data = dict(Product.objects.get(asin=asin))
     events = list(ProductScrapeEvent.objects().filter(asin=asin))
-    print(events)
     events = [schema.ProductScrapeEventDetailSchema(**x) for x in events]
-    print(events)
     data["events"] = events
+    data["events_url"] = f"/products/{asin}/events"
     return data
+
+@app.get("/products/{asin}/events", response_model=List[schema.ProductListSchema])
+def products_scrape_list_view(asin):
+    return list(ProductScrapeEvent.objects().filter(asin=asin))

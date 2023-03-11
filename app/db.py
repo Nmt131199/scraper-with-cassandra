@@ -13,7 +13,14 @@ ASTRA_DB_CLIENT_ID = settings.db_client_id
 ASTRA_DB_CLIENT_SECRET = settings.db_client_secret
 
 BASE_DIR = pathlib.Path(__file__).parent
+SOURCE_DIR = BASE_DIR / "ignored"
+
+if not SOURCE_DIR.exists():
+    SOURCE_DIR = BASE_DIR / "decrypted"
+
 CLUSTER_BUNDLE = str(BASE_DIR / "ignored" / "connect.zip")
+
+
 def get_cluster():
     cloud_config= {
     'secure_connect_bundle': CLUSTER_BUNDLE
