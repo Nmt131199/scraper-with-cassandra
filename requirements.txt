@@ -16,3 +16,4 @@ python-dotenv
 python-slugify
 cryptography
 pypyr
+fake-useragent
